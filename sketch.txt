@@ -1,0 +1,39 @@
+Sparse implementation?
+Basic functionality that will not change, implement in classes,
+other functionality implement in separate function.
+Make sure you can get all the info from the classes, don't have to
+change them later.
+
+need some plotting of the loss function
+what about regularization? dropout etc? early stopping?
+
+Class NeuralNet
+      Layers
+      input
+      output
+
+      __init__(list of layers, )
+
+      def pass_forward (and store values?)
+      def pass_backward
+
+      def fit(iterations) also calculate loss somehow?
+      	  what about step-size?
+	       adagrad? constant?
+	       have a generator?
+	       
+Class Layer
+      weightmatrix: number_of_output x number of input (sparse implementation?)
+      bias: number_of_output
+      activation_function
+      
+
+class activation_function
+
+      def value(x)
+      def deriv(x)
+
+class lossfunction
+
+      def loss(y_hat, y)
+      def deriv(y_hat, y)
