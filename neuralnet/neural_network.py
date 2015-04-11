@@ -1,3 +1,5 @@
+import numpy as np
+
 class NeuralNetwork(object):
     """Both a storage class, storing the layers, input and output, but can also
     do some operations like forward propagation, and backward propagation
@@ -20,6 +22,7 @@ class NeuralNetwork(object):
             activation_function = self.layers[i].get_activation_function()
             
             pre_activation = np.dot(weights, post) + bias
+            # print "i pre_activation: %d, %r" % (i, pre_activation)
             post = activation_function.value(pre_activation)
-
+            # print "i post_activation: %d, %r" % (i, post)
         return post
