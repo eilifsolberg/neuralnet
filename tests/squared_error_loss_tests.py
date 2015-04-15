@@ -7,11 +7,17 @@ def test_loss():
     y = np.array([1, 3, 4]).astype(float)
     y_hat = np.array([2, 1, 4]).astype(float)
     loss_function = SquaredErrorLoss()
-    assert_equal(loss_function.loss(y, y_hat), 2.5)
+    output = sum([loss_function.loss(y_sc, y_hat_sc)
+                  for y_sc, y_hat_sc in zip(y, y_hat)])
+    expected = 2.5
+    assert_equal(output, expected)
 
 def test_deriv():
     y = np.array([1, 3, 4]).astype(float)
     y_hat = np.array([2, 1, 4]).astype(float)
     loss_function = SquaredErrorLoss()
-    np.testing.assert_array_equal(loss_function.deriv(y, y_hat),
-                                  np.array([1, -2, 0]))
+    output = np.array([loss_function.deriv(y_sc, y_hat_sc)
+                       for y_sc, y_hat_sc in zip(y, y_hat)])
+    expected = np.array([1, -2, 0]).astype(float)
+    np.testing.assert_array_equal(output, expected)
+    

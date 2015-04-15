@@ -9,13 +9,13 @@ what about regularization? dropout etc? early stopping?
 
 Class NeuralNet
       Layers
-      input
-      output
+      --loss_function
 
-      __init__(list of layers, )
+      __init__(list of layers, --loss_function)
 
-      def pass_forward (and store values?)
-      def pass_backward
+      def forward_propagate(x)
+      def forward_propagate_store(x)
+      def back_propagate(x,y)
 
       def fit(iterations) also calculate loss somehow?
       	  what about step-size?
