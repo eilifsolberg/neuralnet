@@ -2,6 +2,8 @@ from neuralnet.neural_network import NeuralNetwork
 from neuralnet.linear_activation_function import LinearActivationFunction
 from neuralnet.layer import Layer
 from neuralnet.squared_error_loss import SquaredErrorLoss
+from neuralnet.logistic_sigmoid import LogisticSigmoid
+
 import numpy as np
 
 def test_forward_propagate_zero_layers():
@@ -144,8 +146,8 @@ def test_backpropagation_three_layers():
     gradients = nn.back_propagate(x, y)
 
 
-def test_backprop_vs_finitedifferences():
-    """compare gradient returned by backprop vs finite difference.
+def test_linear_backprop_vs_finitedifferences():
+    """linear: compare gradient returned by backprop vs finite difference.
     Should have equality in the linear case
     """
     epsilon = 1e-6
@@ -162,6 +164,87 @@ def test_backprop_vs_finitedifferences():
         bias = np.random.randn(shape_ls[i][0])
         linear = LinearActivationFunction()
         layers.append(Layer(weights, bias, linear))
+
+    loss = SquaredErrorLoss()
+    nn = NeuralNetwork(layers, loss)
+    x = np.random.randn(shape_ls[0][1])
+    y = np.random.randn(shape_ls[-1][0]) # match dimension of output last layer
+    gradients = nn.back_propagate(x, y)
+
+    #first do for weights
+    finite_diff_weights = []
+    for layer_number in range(n_layers):
+        shape = shape_ls[layer_number]
+        weights_diff = np.zeros(shape)
+        weights = nn.layers[layer_number].get_weights()
+        for i in range(shape[0]):
+            for j in range(shape[1]):
+                w0 = weights.copy()
+                w1 = weights.copy()
+                w0[i, j] = w0[i, j] - epsilon
+                w1[i, j] = w1[i, j] + epsilon
+                nn.layers[layer_number].set_weights(w0)
+                y0 = nn.forward_propagate(x)
+                l0 = nn.loss(y, y0)
+                nn.layers[layer_number].set_weights(w1)
+                y1 = nn.forward_propagate(x)
+                l1 = nn.loss(y, y1)
+                
+                weights_diff[i, j] = (l1 - l0) / (2*epsilon)
+
+        finite_diff_weights.append(weights_diff)
+        # have to set weights for the layer back to original
+        nn.layers[layer_number].set_weights(weights)
+        
+    # then for biases
+    finite_diff_bias = []
+    for layer_number in range(n_layers):
+        shape = shape_ls[layer_number]
+        bias_diff = np.zeros(shape[0])
+        bias = nn.layers[layer_number].get_bias()
+        for i in range(shape[0]):
+            b0 = bias.copy()
+            b1 = bias.copy()
+            b0[i] = b0[i] - epsilon
+            b1[i] = b1[i] + epsilon
+            nn.layers[layer_number].set_bias(b0)
+            y0 = nn.forward_propagate(x)
+            l0 = nn.loss(y, y0)
+            nn.layers[layer_number].set_bias(b1)
+            y1 = nn.forward_propagate(x)
+            l1 = nn.loss(y, y1)
+            bias_diff[i] = (l1 - l0) / (2*epsilon)
+
+        finite_diff_bias.append(bias_diff)
+        # set bias back to original
+        nn.layers[layer_number].set_bias(bias)
+
+
+    for layer_number in range(n_layers):
+        weights_diff = finite_diff_weights[layer_number]
+        bias_diff = finite_diff_bias[layer_number]
+        weights_grad, bias_grad = gradients[layer_number]
+        np.testing.assert_allclose(weights_diff, weights_grad)
+        np.testing.assert_allclose(bias_diff, bias_grad)
+
+def test_sigmoid_backprop_vs_finitedifferences():
+    """logistic: compare gradient returned by backprop vs finite difference.
+    same as linear, just changed activation_function
+    """
+    epsilon = 1e-5
+
+    shape0 = (2, 4)
+    shape1 = (5, 2)
+    shape2 = (3, 5)
+    shape_ls = [shape0, shape1, shape2]
+    n_layers = len(shape_ls)
+
+    layers = []
+    for i in range(n_layers):
+        weights = np.random.randn(shape_ls[i][0], shape_ls[i][1])
+        bias = np.random.randn(shape_ls[i][0])
+        sigmoid = LogisticSigmoid()
+        layers.append(Layer(weights, bias, sigmoid))
 
     loss = SquaredErrorLoss()
     nn = NeuralNetwork(layers, loss)

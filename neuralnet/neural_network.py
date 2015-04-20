@@ -105,18 +105,21 @@ class NeuralNetwork(object):
         
         # now calculate the actual gradients
         gradients = []
+
         # base case, needs special treatment, sine x is not in preactivation_ls
-        #print "this is x: %r" % x
         weight_derivatives = np.outer(delta_ls[0], x)
-        #print "this is weight_derivs: %r" % weight_derivatives
         bias_derivatives = delta_ls[0].copy()
         gradients.append([weight_derivatives, bias_derivatives])
         # go throught the rest n_layers - 1 cases.
         for i in range(n_layers - 1):
             # product of deltas in the layer ahead of the preactivations
-            weight_derivatives = np.outer(delta_ls[i+1], preactivation_ls[i])
+            # I first made the mistake of using preactivated values, but should
+            # use the values after activations
+            activations = np.array(map(activation_function.value,
+                                       preactivation_ls[i]));
+            weight_derivatives = np.outer(delta_ls[i+1], activations)
             assert weight_derivatives.shape[0] == len(delta_ls[i+1]) 
-            assert weight_derivatives.shape[1] == len(preactivation_ls[i])
+            assert weight_derivatives.shape[1] == len(activations)
             bias_derivatives = np.copy(delta_ls[i+1])
             gradients.append((weight_derivatives, bias_derivatives))
             
